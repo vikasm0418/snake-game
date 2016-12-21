@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+	<style type="text/css">
+	canvas{border: #666 1px solid;}
+	</style>
+ <title>snake</title> 
+</head>
+<body>  
+
+<script >
+
+var WIDTH=1510,HEIGHT=810;
+var UpArrow = 38,DownArrow = 40, LeftArrow = 37, RightArrow = 39;
+var canvas,ctx,keystate;
+var snake,food,scl=30;
+var bg = new Image();
+    bg.src = "/home/vicky/Desktop/javascript/snake/bg.jpg";
+
+background = {
+        x:null,
+        y:null,
+        width : bg.width,
+        height : bg.height,
+
+        draw : function(){
+            ctx.drawImage(bg,this.x,this.y);
+        }
+};
+
+snake = {
+    x : null,
+    y : null,
+    xspeed : 1,
+    yspeed : 0,
+    total : 1,
+    tail : [{x:null,y:null}],
+    dire : 2,
+
+    update : function(){
+        if(keystate[UpArrow] && (this.dire === 2 || this.dire === 0))
+        {   
+            this.yspeed = -1;
+            this.xspeed = 0;
+            this.dire = 1;
+        }
+        if(keystate[DownArrow] && (this.dire === 2 || this.dire === 0))
+        {
+            this.yspeed = 1;
+            this.xspeed = 0;
+            this.dire =  3 ;
+        }
+        if(keystate[LeftArrow] && (this.dire === 1 || this.dire === 3))
+        {
+            this.yspeed = 0;
+            this.xspeed = -1;
+            this.dire = 0;
+        }
+        if(keystate[RightArrow] && (this.dire === 1 || this.dire === 3))
+        {
+            this.yspeed = 0;
+            this.xspeed = 1;
+            this.dire = 2;
+        }
+        for (var i = 0; i < this.total-1; i++) {
+            this.tail[i].x=this.tail[i+1].x  ;
+            this.tail[i].y=this.tail[i+1].y;
+        }
+           
+        this.tail[this.total-1].x = this.x ;
+        this.tail[this.total-1].y = this.y ;
+        
+        if(this.x + 15 +this.xspeed*scl < WIDTH && this.x + this.xspeed > 10)
+        this.x = this.x + this.xspeed*scl ; 
+        if(this.y + 15 + this.yspeed*scl < HEIGHT && this.y + this.yspeed >10)    
+        this.y = this.y + this.yspeed*scl ;
+        this.death(); 
+
+    },
+    
+    death : function(){
+        var hitdetect1 = function(sx,fx,sy,fy,sw,fw,sh,fh){
+            return (sx <fx+fw && fx <sx+sw && sy<fy+fh && fy <sy+sh) ;
+        };
+        for (var i = 0; i < this.total; i++) {
+            if(hitdetect1(this.x,this.tail[i].x,this.y,this.tail[i].y,25,25,25,25))
+            {
+                
+                ctx.fillStyle = "#FC0";
+                ctx.font = "italic bold 36px Arial ,sans-serif";
+                ctx.fillText('Game Over', 0, 0, 500);
+                clearInterval(loopInterval);
+
+            }
+        }
+    },
+
+    draw : function(){
+        for (var i = 0; i < this.tail.length; i++) {
+            ctx.fillRect(this.tail[i].x,this.tail[i].y,25,25);
+        }
+        ctx.fillRect(this.x,this.y,25,25);
+    }
+};
+
+food = {
+    x :null,
+    y : null,
+    update : function(){
+        var hitdetect = function(sx,fx,sy,fy,sw,fw,sh,fh){
+                return (sx <fx+fw && fx <sx+sw && sy<fy+fh && fy <sy+sh) ;
+            };
+        if(hitdetect(snake.x,this.x,snake.y,this.y,25,25,25,25))
+        {   
+            snake.tail.push({x:snake.x,y:snake.y});
+            this.x = Math.floor(Math.random()*1475);
+            this.y = Math.floor(Math.random()*800);
+            snake.total++;
+            document.getElementById('status').innerHTML = snake.total;
+        }
+    },
+     draw : function(){
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.x,this.y,25,25);
+    }
+
+}; 
+
+function main(){
+        canvas = document.createElement("canvas");
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        ctx = canvas.getContext("2d");
+        document.body.appendChild(canvas);
+        keystate = {};
+        document.addEventListener("keydown", function(evt){
+            keystate[evt.keyCode] = true ;
+        });
+        document.addEventListener("keyup", function(evt){
+            delete keystate[evt.keyCode];
+        });
+
+        init();
+}
+
+function animate(){
+            update();
+            //snake.death();
+            draw();
+
+        ctx.fillStyle = "black";       
+        };
+        var loopInterval = setInterval(animate, 100);
+
+function init(){
+        snake.x =100;
+        snake.y = 100;
+        food.x = 500;
+        food.y = 500;
+}   
+
+function update(){
+        snake.update();
+        food.update();
+}
+
+function draw(){ 
+        ctx.save();
+        ctx.fillRect(0,0,WIDTH,HEIGHT);
+        background.draw();
+        ctx.fillStyle = "#FC0";
+        ctx.font = "italic bold 18px Arial ,sans-serif";
+        ctx.fillText('game by : legend_killer', 650, 820, 500);
+        ctx.fillStyle = "#fff";
+        snake.draw();
+        food.draw();
+        ctx.restore();
+}
+main();
+ </script>
+ <h2> Score : <h2>
+ <h3 id="status"></h3>
+</body>
+</html>
